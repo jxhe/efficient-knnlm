@@ -44,6 +44,25 @@ python preprocess.py \
 wget https://nlp.stanford.edu/projects/knnlm/wt103_checkpoint_best.pt -P knnlm_ckpt
 ```
 
+**Compute the datastore**
+
+```bash
+python eval_lm.py data-bin/wikitext-103 \
+    --path knnlm_ckpt/checkpoint_best.pt \
+    --sample-break-mode none --max-tokens 3072 \
+    --softmax-batch 1024 --gen-subset train \
+    --context-window 1536 --tokens-per-sample 1536 \
+    --dstore-mmap dstore/dstore --knn-keytype 'last_ffn_input' \
+    --dstore-size 103225485 --model-overrides "{'knn_keytype': 'last_ffn_input'}" \
+    --save-knnlm-dstore --fp16 --dstore-fp1
+```
+
+**build faiss index**
+
+```bash
+bash knnlm_scripts/build_faiss.cpu.slurm
+```
+
 
 
 **Evaluate kNNLM**:
@@ -117,6 +136,16 @@ please find the saved checkpoint in `checkpoint/wikitext103-valid/[DATE]/moe/mlp
 evaluate knnlm with adaptive retrieval:
 
 ```bash
+# precompute frequency, fertilty features with word ids being the key
+# TODO: this operation is repetitive, and can be optimized to merge 
+# with the previous frequency/fertility computation
+python knnlm_scripts/cache_freq_fertility.py \
+	--data datasets/wikitext-103/wiki.train.tokens \
+	--cache datasets/wikitext103 \
+	--dict-path data-bin/wikitext-103/dict.txt
+
+# note: this command may require at least 50G RAM since it loads 
+# frequency, fertility features into memory
 bash knnlm_scripts/benchmark/benchmark_ar.sh [the retrieval adaptor .pt file]
 ```
 
@@ -124,7 +153,46 @@ bash knnlm_scripts/benchmark/benchmark_ar.sh [the retrieval adaptor .pt file]
 
 ### Datastore Pruning
 
+**precompute all the retrieval results for every record in the datastore:**
+
+```bash
+# We highly recommend to parallelize this operation since it takes 
+# a lot of time. In our original experiments we utilize slurm to 
+# parallelize this operation in 
+# knnlm_scripts/dstore_compression/save_retrieval_results.slurm.sh,
+# readers can refer to it for an example for how to parallelize it easily,
+# TODO: parallize this operation without using slurm
+bash knnlm_scripts/dstore_compression/save_retrieval_results.sh
 ```
 
+We precompute and save the retrieved results so that we can play with different datastore pruning strategies. 
+
+**Greedy Merging**:
+
+```bash
+bash knnlm_scripts/dstore_compression/merge_compression.slurm.sh
 ```
 
+The new datastore and faiss index is located in `dstore/wikitext-103/merge_compress`.
+
+evaluate knnlm with the new datastore:
+
+```bash
+# note: you need to specify the new dstore file and faiss index path
+# in this script
+bash knnlm_scripts/benchmark/benchmark_dp.sh 
+```
+
+
+
+### Dimension Reduction
+
+Specify `--pca [pca dimension]` whenever buiding the faiss index (i.e. run `build_dstore.py`).
+
+
+
+### Combining Three Strategies Together
+
+In short, specify ``--pca [pca dimension]`` when building the datatore, and combine the argumets in `benchmark_dp.sh` and `benchmark_ar.sh` above.
+
+TODO: copy-and-run instructions

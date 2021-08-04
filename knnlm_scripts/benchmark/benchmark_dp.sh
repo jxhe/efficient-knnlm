@@ -10,10 +10,9 @@ temp=1
 
 
 
-dstore_size=${size_list[$i]}
-dstore_file=${file_list[$i]}
-index=${index_list[$i]}
-dstore_weight=${weight_list[$i]}
+dstore_size=xx
+dstore_file=xx
+index=xx
 
 echo "evaluate knnlm with ${dstore_file}"
 

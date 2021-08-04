@@ -18,11 +18,12 @@ taskid=${SLURM_ARRAY_TASK_ID}
 # index_name=dstore/heldout600/knn.101010281.index
 
 size=103225485
-pca=256
+pca=0
 actual_size=103225485
 keys=dstore/dstore_size103225485_embed1024_fp16_keys.npy
 vals=dstore/dstore_size103225485_embed1024_fp16_vals.npy
-index_name=dstore/knn.103225485.pca${pca}.index
+# index_name=dstore/knn.103225485.pca${pca}.index
+index_name=dstore/knn.default.index
 
 python build_dstore.py \
     --dstore_keys ${keys} \

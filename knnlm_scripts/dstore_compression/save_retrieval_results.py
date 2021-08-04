@@ -33,7 +33,7 @@ parser.add_argument('--save', type=str,
 # for the purpose of parallel computation
 parser.add_argument('--start-point', type=int, default=0,
     help='the starting point to traverse the datastore')
-parser.add_argument('--num', type=int, default=10000,
+parser.add_argument('--num', type=int, default=1e11,
     help='number of points to traverse')
 
 args = parser.parse_args()

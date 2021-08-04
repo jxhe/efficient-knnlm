@@ -8,16 +8,14 @@
 ##SBATCH --nodelist=compute-0-3
 ##SBATCH --exclude=compute-0-31,compute-0-19,compute-0-15
 
-taskid=${SLURM_ARRAY_TASK_ID}
-
 # declare -a k_list=(1 3 7 9 12 15)
 
 dstore_prefix="dstore/dstore_size103225485_embed1024_fp16"
 dstore_size=103225485
 dim=1024
-retrieval_dir="dstore/filter_compress"
+retrieval_dir="dstore/merge_compress"
 save_dir="dstore/wikitext-103/merge_compress"
-k=${k_list[$taskid]}
+k=30
 
 # declare -a k_list=(1 5 9 15 30 60)
 
