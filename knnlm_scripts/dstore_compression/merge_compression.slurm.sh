@@ -12,21 +12,21 @@ taskid=${SLURM_ARRAY_TASK_ID}
 
 # declare -a k_list=(1 3 7 9 12 15)
 
-# dstore_prefix="dstore/dstore_size103225485_embed1024_fp16"
-# dstore_size=103225485
-# dim=1024
-# retrieval_dir="dstore/filter_compress"
-# save_dir="/projects/tir5/users/junxianh/knnlmXS/dstore/wikitext-103/merge_compress"
-# k=${k_list[$taskid]}
-
-declare -a k_list=(1 5 9 15 30 60)
-
-dstore_prefix="dstore/law/dstore_size19068709_embed1536_fp16"
-dstore_size=19068709
-dim=1536
-retrieval_dir="/projects/tir5/users/junxianh/knnlmXS/dstore/law/merge_compression"
-save_dir="/projects/tir5/users/junxianh/knnlmXS/dstore/law/merge_compression"
+dstore_prefix="dstore/dstore_size103225485_embed1024_fp16"
+dstore_size=103225485
+dim=1024
+retrieval_dir="dstore/filter_compress"
+save_dir="dstore/wikitext-103/merge_compress"
 k=${k_list[$taskid]}
+
+# declare -a k_list=(1 5 9 15 30 60)
+
+# dstore_prefix="dstore/law/dstore_size19068709_embed1536_fp16"
+# dstore_size=19068709
+# dim=1536
+# retrieval_dir="/projects/tir5/users/junxianh/knnlmXS/dstore/law/merge_compression"
+# save_dir="/projects/tir5/users/junxianh/knnlmXS/dstore/law/merge_compression"
+# k=${k_list[$taskid]}
 
 
 python knnlm_scripts/dstore_compression/merge_compression.py \

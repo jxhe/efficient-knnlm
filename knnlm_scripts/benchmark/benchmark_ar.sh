@@ -16,6 +16,6 @@ bash knnlm_scripts/utils_cmd/eval_knnlm.sh \
     -c knnlm_ckpt/wt103_checkpoint_best.pt \
     -n 103225485 \
     -f datasets/wikitext-103 \
-    -a ctxt,lm_ent,lm_max,fert \
+    -a ctxt,freq,lm_ent,lm_max,fert \
     -u ${cutoff} \
     -h ${ar_ckpt} \

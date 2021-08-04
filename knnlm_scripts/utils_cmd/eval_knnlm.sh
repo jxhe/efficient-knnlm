@@ -21,6 +21,7 @@ probe=32
 cache_feature="none"
 cutoff=50
 moe_feat="ctxt,lm_ent,lm_max,fert"
+ckpt="knnlm_ckpt/wt103_checkpoint_best.pt"
 
 while getopts ":d:c:s:p:i:n:l:m:t:o:k:e:w:h:b:f:u:a:" arg; do
   case $arg in

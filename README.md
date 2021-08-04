@@ -46,6 +46,19 @@ wget https://nlp.stanford.edu/projects/knnlm/wt103_checkpoint_best.pt -P knnlm_c
 
 
 
+**Evaluate kNNLM**:
+
+```bash
+bash knnlm_scripts/utils_cmd/eval_knnlm.sh \
+    -d wikitext-103 \
+    -s valid \
+    -p dstore/dstore_size103225485_embed1024_fp16 \
+    -i dstore/knn.default.index \
+    -n 103225485 \
+```
+
+
+
 ## Efficient kNNLM
 The following includes instructions to speed-up kNNLM through adaptive retrieval, datastore pruning, and dimension reduction.
 
@@ -81,12 +94,37 @@ python knnlm_scripts/cache_freq_fertility.py --data datasets/wikitext-103/wiki.t
 Precompute all features including contextualized embeddings:
 
 ```bash
+# [NOTE]: the following commands require one GPU
+
 # The following command saves "[split]_ctxt.jsonl" (include contextualized embeddings) 
 # and "[split]_others.jsonl" (include other required quantities such as 
 # symbolic features, lm/knnlm scores, lm confidence, etc.)
-CUDA_VISIBLE_DEVICES=xx bash knnlm_scripts/adaptive_retrieval/precompute_all_features.sh train
-CUDA_VISIBLE_DEVICES=xx bash knnlm_scripts/adaptive_retrieval/precompute_all_features.sh valid
+bash knnlm_scripts/adaptive_retrieval/precompute_all_features.sh train
+bash knnlm_scripts/adaptive_retrieval/precompute_all_features.sh valid
 ```
 
 Train the retrieval adaptor:
+
+```bash
+# [NOTE]: the following command requires one GPU
+
+# arguments like input paths can be changed in this script
+bash knnlm_scripts/adaptive_retrieval/train_ar.sh
+```
+
+please find the saved checkpoint in `checkpoint/wikitext103-valid/[DATE]/moe/mlp.l1.0.05.ngram0.hid128.nl5.bs64.drop0.2.ftall.seed927.jobid.taskid/`
+
+evaluate knnlm with adaptive retrieval:
+
+```bash
+bash knnlm_scripts/benchmark/benchmark_ar.sh [the retrieval adaptor .pt file]
+```
+
+
+
+### Datastore Pruning
+
+```
+
+```
 
