@@ -16,8 +16,9 @@ Experiments for this paper were conducted on machines that contain 100GB of RAM,
 
 If you are working with a remote cluster, please note that we use [memmaps](https://numpy.org/doc/1.18/reference/generated/numpy.memmap.html) for saving the datastore. This allows us to keep the data on disk while accessing it by loading small chunks into memory, depending on the available RAM. This means there are a large number of disk seeks. In order to prevent slowing down your entire cluster, we suggest always reading/writing this data to/from local disks (as opposed to NFS directories), and flash storage is best for faster access.
 
-### Prepare the data
+### Prerequisite -- go through the evaluation of the kNNLM baseline and prepare the datastores
 
+**Prepare Data**.
 We share Fairseq's instructions on how to prepare the data here.
 
 ```bash
@@ -37,6 +38,16 @@ python preprocess.py \
     --destdir data-bin/wikitext-103 \
     --workers 20
 ```
+
+**Download the language model checkpoint pretrained on WikiText-103 (trained by facebook)**
+```bash
+wget https://nlp.stanford.edu/projects/knnlm/wt103_checkpoint_best.pt -P knnlm_ckpt
+```
+
+
+
+## Efficient kNNLM
+The following includes instructions to speed-up kNNLM through adaptive retrieval, datastore pruning, and dimension reduction.
 
 ### Adaptive Retrieval
 
@@ -60,11 +71,22 @@ python preprocess.py \
     --srcdict data-bin/wikitext-103/dict.txt   
 ```
 
-precompute scalar features like frequency or fertility which may be used in adaptive retrieval:
+Precompute scalar features like frequency or fertility which may be used in adaptive retrieval:
 
 ```bash
 # the command would save "freq_cache.pickle" and "fertility_cache.pickle" into folder [args.cache]
-python knnlm_scripts/cache_freq_fertility.py --data datasets/wikitext-103/wiki.train.tokens --cache datasets/wikitext-103
+python knnlm_scripts/cache_freq_fertility.py --data datasets/wikitext-103/wiki.train.tokens --cache datasets/wikitext103-valid
 ```
 
+Precompute all features including contextualized embeddings:
+
+```bash
+# The following command saves "[split]_ctxt.jsonl" (include contextualized embeddings) 
+# and "[split]_others.jsonl" (include other required quantities such as 
+# symbolic features, lm/knnlm scores, lm confidence, etc.)
+CUDA_VISIBLE_DEVICES=xx bash knnlm_scripts/adaptive_retrieval/precompute_all_features.sh train
+CUDA_VISIBLE_DEVICES=xx bash knnlm_scripts/adaptive_retrieval/precompute_all_features.sh valid
+```
+
+Train the retrieval adaptor:
 
