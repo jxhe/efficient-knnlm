@@ -10,5 +10,5 @@ l1=0.05
 # feature="ctxt,freq,lm_ent,lm_max"
 feature="all"
 
-bash knnlm_scripts/utils_cmd/train_moe.sh ${dataset} ${train} ${val} ${l1} ${feature}
+bash ef_knnlm/utils_cmd/train_ar.sh ${dataset} ${train} ${val} ${l1} ${feature}
 

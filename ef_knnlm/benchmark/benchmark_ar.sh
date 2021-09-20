@@ -8,7 +8,7 @@
 cutoff=50
 ar_ckpt=$1
 
-bash knnlm_scripts/utils_cmd/eval_knnlm.sh \
+bash ef_knnlm/utils_cmd/eval_knnlm.sh \
     -d wikitext-103 \
     -s test \
     -p dstore/dstore_size103225485_embed1024_fp16 \

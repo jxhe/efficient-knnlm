@@ -47,5 +47,5 @@ python eval_lm.py data-bin/${dataset} \
     --model-overrides "{'knn_keytype': 'last_ffn_input'}" \
     --k 1024 --lmbda ${lmbda} --dstore-size ${dstore_size} --knn-keytype last_ffn_input \
     --probe 32 --fp16 --dstore-fp16 --no-load-keys --knn-sim-func "do_not_recomp_l2" \
-    --write-distribution datasets/${dataset}/${split} --moe-feat-cache datasets/${dataset} \
+    --save-feature datasets/${dataset}/${split} --moe-feat-cache datasets/${dataset} \
     --knnlm \

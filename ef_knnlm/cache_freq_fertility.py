@@ -23,14 +23,14 @@ parser.add_argument('--overwrite', action='store_true', default=False,
     help='overwrite existing cache files')
 parser.add_argument('--dict-path', type=str, default=None,
     help='if specified, keys are stored as token ids')
-parser.add_argument('--break-line', action='store_true', default=False,
-    help='sentence orders are shuffled')
+parser.add_argument('--csize', type=int, default=1,
+    help='context size when computing context frequency/fertility')
 
 args = parser.parse_args()
 
 
 # do not perform scaling over context
-def get_ngram_freq(file, ngram=4, dictionary=None, break_line=False):
+def get_ngram_freq(file, ngram=4, dictionary=None):
     res = Counter()
     prev = ['</s>'] * ngram if dictionary is None else [dictionary.index('</s')] * ngram
     with open(file) as fin:
@@ -39,7 +39,7 @@ def get_ngram_freq(file, ngram=4, dictionary=None, break_line=False):
                 print(f'procesed {i} lines')
             for tok in line.strip().split():
                 prev = prev[-ngram:]
-                for j in range(3, ngram+1):
+                for j in range(max(ngram-1, 1), ngram+1):
                     if dictionary is None:
                         res[' '.join(prev[-j:])] += 1
                     else:
@@ -51,7 +51,7 @@ def get_ngram_freq(file, ngram=4, dictionary=None, break_line=False):
 
     return res
 
-def get_ngram_fertility(file, ngram=4, dictionary=None, break_line=False):
+def get_ngram_fertility(file, ngram=4, dictionary=None):
     """compute the next word fertility of the context, which is
     the number of unique words following this context
     """
@@ -63,7 +63,7 @@ def get_ngram_fertility(file, ngram=4, dictionary=None, break_line=False):
                 print(f'procesed {i} lines')
             for tok in line.strip().split():
                 prev = prev[-ngram:]
-                for j in range(3, ngram+1):
+                for j in range(max(ngram-1, 1), ngram+1):
                     if dictionary is None:
                         res[' '.join(prev[-j:])].update([tok])
                     else:
@@ -94,7 +94,7 @@ if not args.overwrite and os.path.isfile(freq_cache):
     print('skip freq cache files since they exist')
 else:
     print('compute freq statistics')
-    freq_cnt = get_ngram_freq(args.data, dictionary=dictionary, break_line=args.break_line)
+    freq_cnt = get_ngram_freq(args.data, ngram=args.csize, dictionary=dictionary)
     if dictionary is not None:
         freq_cnt = Counter({k:np.log(v + 1) for k,v in freq_cnt.items()})
     with open(freq_cache, 'wb') as pf:
@@ -105,7 +105,7 @@ if not args.overwrite and os.path.isfile(fertility_cache):
     print('skip fertility cache files since they exist')
 else:
     print('compute fertility statistics')
-    fertility_cnt = get_ngram_fertility(args.data, dictionary=dictionary, break_line=args.break_line)
+    fertility_cnt = get_ngram_fertility(args.data, ngram=args.csize, dictionary=dictionary)
     if dictionary is not None:
         fertility_cnt = Counter({k:np.log(v + 1) for k,v in fertility_cnt.items()})
     with open(fertility_cache, 'wb') as pf:

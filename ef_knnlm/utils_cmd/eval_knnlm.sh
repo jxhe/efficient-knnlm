@@ -22,6 +22,7 @@ cache_feature="none"
 cutoff=50
 moe_feat="ctxt,lm_ent,lm_max,fert"
 ckpt="knnlm_ckpt/wt103_checkpoint_best.pt"
+dataset="wikitext-103"
 
 while getopts ":d:c:s:p:i:n:l:m:t:o:k:e:w:h:b:f:u:a:" arg; do
   case $arg in
@@ -88,9 +89,9 @@ python eval_lm.py data-bin/${dataset} \
     --probe ${probe} --knnlm --fp16 --dstore-fp16 --no-load-keys --knn-sim-func "do_not_recomp_l2" \
     --knn-temp ${temp} \
     --dstore-weight ${dstore_weight} \
-    --moe-path ${moe_path} \
+    --ar-path ${moe_path} \
     --cache-feature ${cache_feature} \
-    --moe-cutoff ${cutoff} \
-    --moe-feat ${moe_feat} \
+    --ar-cutoff ${cutoff} \
+    --ar-feat ${moe_feat} \
     ${extra}
     # --dstore-weight \

@@ -20,7 +20,9 @@ class LMContextWindowDataset(FairseqDataset):
                  context_window,
                  pad_idx,
                  freq=None,
-                 fert=None):
+                 fert=None,
+                 knnlm_feat_csize=1,
+                 ):
         assert isinstance(dataset, MonolingualDataset)
         assert context_window > 0
         self.dataset = dataset
@@ -29,10 +31,12 @@ class LMContextWindowDataset(FairseqDataset):
         self.pad_idx = pad_idx
         self.prev_tokens = np.empty([0])
 
+        self.vocab = dataset.vocab
+
         self.freq = freq
         self.fert = fert
         if freq is not None or fert is not None:
-            self.ngram = 4
+            self.ngram = knnlm_feat_csize
             self.prev = [self.dataset.vocab.index('</s>')] * self.ngram
 
     def __getitem__(self, index):

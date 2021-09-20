@@ -9,8 +9,8 @@ import random
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--input', type=str,
     help='input text file')
-parser.add_argument('--n', type=int, default=500,
-    help='the number of held-out articles')
+parser.add_argument('--heldout-ratio', type=float, default=0.1,
+    help='the ratio of heldout data')
 parser.add_argument('--output', type=str, help='output file prefix')
 
 
@@ -41,15 +41,18 @@ def write_article(fout, article):
     for line in article:
         fout.write(line)
 
+# we hold out complete articles
 data = read_wikitext103(args.input)
-print(f'there are {len(data)} articles')
-size = args.n
+size = int(len(data) * args.heldout_ratio)
+
+print(f'there are {len(data)} articles, hold out {size} articles for validation')
+
 
 random.seed(22)
 random.shuffle(data)
 
-held_out = data[:args.n]
-train = data[args.n:]
+held_out = data[:size]
+train = data[size:]
 
 print('write heldout')
 with open(args.output + '.heldout', 'w') as fout:

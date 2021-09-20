@@ -27,17 +27,17 @@ class KNN_Dstore(object):
 
         self.index = self.setup_faiss(args)
 
-        if args.moe_path != '' and args.moe_path != 'none':
-            self.moe = self.setup_moe(args.moe_path, args.moe_cutoff)
+        if args.ar_path != '' and args.ar_path != 'none':
+            self.moe = self.setup_moe(args.ar_path, args.ar_cutoff)
         else:
             self.moe = None
 
-    def setup_moe(self, ckpt_path, moe_cutoff=50):
+    def setup_moe(self, ckpt_path, ar_cutoff=50):
         ckpt_moe = torch.load(ckpt_path)
 
         moe_args = ckpt_moe['args']
         moe_epoch = ckpt_moe['epoch']
-        self.moe_threshold = ckpt_moe['threshold'][moe_cutoff]
+        self.moe_threshold = ckpt_moe['threshold'][ar_cutoff]
         moe_model = MLPMOE(
             feature_size=moe_args.feature_size,
             hidden_units=moe_args.hidden_units,
@@ -49,7 +49,7 @@ class KNN_Dstore(object):
         moe_model.load_state_dict(ckpt_moe['param'])
 
         print(f'loaded models at epoch {moe_epoch} from {ckpt_path}')
-        print(f'cutoff {moe_cutoff}, threshod: {self.moe_threshold}')
+        print(f'cutoff {ar_cutoff}, threshod: {self.moe_threshold}')
 
         if torch.cuda.is_available():
             print('use cuda')

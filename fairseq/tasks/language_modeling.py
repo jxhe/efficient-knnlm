@@ -116,20 +116,22 @@ class LanguageModelingTask(FairseqTask):
                             help='if true, datastore items are saved in fp16 and int16')
         parser.add_argument('--move-dstore-to-mem', default=False, action='store_true',
                             help='move the keys and values for knn to memory')
-        parser.add_argument('--write-distribution', default=None, type=str,
-                            help='write the token-level probilities to files for analysis')
+        parser.add_argument('--save-feature', default=None, type=str,
+                            help='save features to files')
+        parser.add_argument('--knnlm-feat-csize', default=1, type=int,
+                            help='the context size of frequency/fertility features')
         parser.add_argument('--analyze-knn', default=False, action='store_true',
                             help='analyze the retrieved knn tokens')
-        parser.add_argument('--moe-feat-cache', default=None, type=str,
+        parser.add_argument('--ar-feat-cache', default=None, type=str,
                             help='cache file which stores the related features')
         parser.add_argument('--dstore-weight', default='False', type=str, metavar='BOOL',
                             help='whether applies different weights to different entries')
-        parser.add_argument('--moe-path', default="none", type=str,
-                            help='the path to moe checkpoint')
-        parser.add_argument('--moe-cutoff', default=50, type=int,
-                            help='the path to moe checkpoint')
-        parser.add_argument('--moe-feat', default="ctxt,lm_ent,lm_max", type=str,
-                            help='the path to moe checkpoint')
+        parser.add_argument('--ar-path', default="none", type=str,
+                            help='the path to adaptive retrieval checkpoint')
+        parser.add_argument('--ar-cutoff', default=50, type=int,
+                            help='the cutoff point in adaptive retrieval')
+        parser.add_argument('--ar-feat', default="ctxt,lm_ent,lm_max", type=str,
+                            help='features in adaptive retrievall')
         parser.add_argument('--cache-feature', default="", type=str,
                     help='the cache feature directory to read frequency and fertility')
         ## knnlm related items

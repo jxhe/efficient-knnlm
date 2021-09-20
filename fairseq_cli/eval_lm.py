@@ -96,16 +96,16 @@ def main(parsed_args):
     # Load dataset splits
     task.load_dataset(args.gen_subset)
     dataset = task.dataset(args.gen_subset)
-    args.moe_feat = args.moe_feat.split(',')
+    args.ar_feat = args.ar_feat.split(',')
     if args.context_window > 0:
-        if args.moe_path != 'none' and args.cache_feature != '':
-            if 'freq' in args.moe_feat:
+        if args.ar_path != 'none' and args.cache_feature != '':
+            if 'freq' in args.ar_feat:
                 print('loading freq cache')
                 freq_id_cache = pickle.load(open(os.path.join(args.cache_feature, 'freq_cache_id.pickle'), 'rb'))
             else:
                 freq_id_cache = None
 
-            if 'fert' in args.moe_feat:
+            if 'fert' in args.ar_feat:
                 print('loading fert cache')
                 fertility_id_cache = pickle.load(open(os.path.join(args.cache_feature, 'fertility_cache_id.pickle'), 'rb'))
             else:
@@ -122,6 +122,7 @@ def main(parsed_args):
             pad_idx=task.source_dictionary.pad(),
             freq=freq_id_cache,
             fert=fertility_id_cache,
+            knnlm_feat_csize=args.knnlm_feat_csize,
         )
     logger.info('{} {} {} examples'.format(args.data, args.gen_subset, len(dataset)))
 
@@ -179,15 +180,15 @@ def main(parsed_args):
     if args.knnlm:
         knn_dstore = KNN_Dstore(args)
 
-    if args.write_distribution is not None:
-        fout_ctxt = open(args.write_distribution + '_ctxt.jsonl', 'w')
-        fout_extra = open(args.write_distribution + '_others.jsonl', 'w')
+    if args.save_feature is not None:
+        fout_ctxt = open(args.save_feature + '_ctxt.jsonl', 'w')
+        fout_extra = open(args.save_feature + '_others.jsonl', 'w')
 
-        ngram = 4
-        prev = ['</s>'] * ngram
+        ngram = args.knnlm_feat_csize
+        prev = task.target_dictionary.index('</s>') * ngram
 
-        freq_cache = os.path.join(args.moe_feat_cache, 'freq_cache.pickle')
-        fertility_cache = os.path.join(args.moe_feat_cache, 'fertility_cache.pickle')
+        freq_cache = os.path.join(args.ar_feat_cache, 'freq_cache_id.pickle')
+        fertility_cache = os.path.join(args.ar_feat_cache, 'fertility_cache_id.pickle')
 
         if os.path.isfile(freq_cache):
             print('loading freq cnt from cache')
@@ -270,7 +271,7 @@ def main(parsed_args):
                     tokens = tokens[1:]
                     pos_scores = pos_scores[1:]
 
-                if args.write_distribution is not None:
+                if args.save_feature is not None:
                     # hypo_out = {'string': [task.target_dictionary[t.item()] for t in hypo['tokens']],
                     #     'tokens': hypo['tokens'].tolist(),
                     #     'positional_scores': hypo['positional_scores'].tolist(),
@@ -284,17 +285,18 @@ def main(parsed_args):
 
                     # import pdb; pdb.set_trace()
                     for k in range(len(hypo['tokens'])):
-                        tok = task.target_dictionary[hypo['tokens'][k].item()]
+                        # tok = task.target_dictionary[hypo['tokens'][k].item()]
+                        tok = hypo['tokens'][k].item()
                         prev = prev[-ngram:]
-                        hypo_others_tmp = {'s': tok,
-                                    't': hypo['tokens'][k].item(),
+                        hypo_others_tmp = {'s': task.target_dictionary[tok],
+                                    't': tok,
                                     'int_s': hypo['positional_scores'][k].item(),
                                     'knn_s': hypo['knn_scores'][k].item() if hypo['knn_scores'] is not None else None,
                                     'lm_s': hypo['lm_scores'][k].item(),
                                     'lm_ent': hypo['lm_entropy'][k].item(),
                                     'lm_max': np.exp(hypo['lm_max'][k].item()),
-                                    'freq': [np.log(freq_cnt[' '.join(prev[-j:])] + 1) for j in range(1, ngram + 1)],
-                                    'fert': [np.log(fertility_cnt[' '.join(prev[-j:])] + 1) for j in range(1, ngram + 1)],
+                                    'freq': [freq_cnt[' '.join(prev[-j:])] for j in range(1, ngram + 1)],
+                                    'fert': [fertility_cnt[' '.join(prev[-j:])] for j in range(1, ngram + 1)],
                                     # 'knn_dists': hypo['knn_dists'][k].tolist(),
                             }
                         if args.analyze_knn:
