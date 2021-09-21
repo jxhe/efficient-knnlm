@@ -27,8 +27,8 @@ class KNN_Dstore(object):
 
         self.index = self.setup_faiss(args)
 
-        if args.ar_path != '' and args.ar_path != 'none':
-            self.moe = self.setup_moe(args.ar_path, args.ar_cutoff)
+        if args.ar_ckpt != '' and args.ar_ckpt != 'none':
+            self.moe = self.setup_moe(args.ar_ckpt, args.ar_cutoff)
         else:
             self.moe = None
 

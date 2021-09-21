@@ -32,7 +32,7 @@ feature_str=$(printf "$feature" | tr , _)
 SAVE=checkpoint/${dataset}/${DATE}/adaptive_retrieval/${arch}.l1.${l1}.ngram${ngram}.hid${hid}.nl${nl}.bs${bs}.drop${drop}.ft${feature_str}.seed${seed}.jobid${SLURM_ARRAY_JOB_ID}.taskid${SLURM_ARRAY_TASK_ID}
 rm -r ${SAVE}; mkdir -p ${SAVE}
 
-python ef_knnlm/adaptive_retrieval.py \
+python ef_knnlm/adaptive_retrieval/adaptive_retrieval.py \
     --hidden-units ${hid} \
     --nlayers ${nl} \
     --dropout ${drop} \

@@ -3,7 +3,7 @@
 # declare -a f_list=("all" "ctxt" "ctxt,freq,lm_ent,lm_max" "ctxt,lm_ent,lm_max" "ctxt,lm_ent,lm_max,fert" "freq" "fert" "lm_ent,lm_max" "freq,lm_ent,lm_max" "lm_ent,lm_max,fert")
 # declare -a f_list=("ctxt,fert" "ctxt,freq,fert" "ctxt,freq")
 
-dataset="wikitext103-valid"
+dataset="wikitext-103-valid"
 train="datasets/${dataset}/train"
 val="datasets/${dataset}/valid"
 l1=0.05

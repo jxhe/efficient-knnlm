@@ -8,7 +8,8 @@ vals=$4
 index_name=$5
 dimension=${6:-1024}
 dstore_dir=${7:-""}
-infer_prefix=${8:-"dstore"}
+pca=${8:-512}
+infer_prefix=${9:-"dstore"}
 
 
 python build_dstore.py \
@@ -22,4 +23,5 @@ python build_dstore.py \
     --num_keys_to_add_at_a_time 500000 \
     --starting_point 0 \
     --infer_prefix ${infer_prefix} \
+    --pca ${pca} \
     --dstore_fp16

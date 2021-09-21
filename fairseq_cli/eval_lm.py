@@ -96,18 +96,18 @@ def main(parsed_args):
     # Load dataset splits
     task.load_dataset(args.gen_subset)
     dataset = task.dataset(args.gen_subset)
-    args.ar_feat = args.ar_feat.split(',')
+    args.ar_feat_type = args.ar_feat_type.split(',')
     if args.context_window > 0:
-        if args.ar_path != 'none' and args.cache_feature != '':
-            if 'freq' in args.ar_feat:
+        if args.ar_ckpt != 'none' and args.ar_freq_dict != '':
+            if 'freq' in args.ar_feat_type:
                 print('loading freq cache')
-                freq_id_cache = pickle.load(open(os.path.join(args.cache_feature, 'freq_cache_id.pickle'), 'rb'))
+                freq_id_cache = pickle.load(open(os.path.join(args.ar_freq_dict, 'freq_cache_id.pickle'), 'rb'))
             else:
                 freq_id_cache = None
 
-            if 'fert' in args.ar_feat:
+            if 'fert' in args.ar_feat_type:
                 print('loading fert cache')
-                fertility_id_cache = pickle.load(open(os.path.join(args.cache_feature, 'fertility_cache_id.pickle'), 'rb'))
+                fertility_id_cache = pickle.load(open(os.path.join(args.ar_freq_dict, 'fertility_cache_id.pickle'), 'rb'))
             else:
                 fertility_id_cache = None
             # fertility_id_cache=None
@@ -185,7 +185,7 @@ def main(parsed_args):
         fout_extra = open(args.save_feature + '_others.jsonl', 'w')
 
         ngram = args.knnlm_feat_csize
-        prev = task.target_dictionary.index('</s>') * ngram
+        prev = [task.target_dictionary.index('</s>')] * ngram
 
         freq_cache = os.path.join(args.ar_feat_cache, 'freq_cache_id.pickle')
         fertility_cache = os.path.join(args.ar_feat_cache, 'fertility_cache_id.pickle')
@@ -295,8 +295,8 @@ def main(parsed_args):
                                     'lm_s': hypo['lm_scores'][k].item(),
                                     'lm_ent': hypo['lm_entropy'][k].item(),
                                     'lm_max': np.exp(hypo['lm_max'][k].item()),
-                                    'freq': [freq_cnt[' '.join(prev[-j:])] for j in range(1, ngram + 1)],
-                                    'fert': [fertility_cnt[' '.join(prev[-j:])] for j in range(1, ngram + 1)],
+                                    'freq': [freq_cnt[tuple(prev[-j:])] for j in range(1, ngram + 1)],
+                                    'fert': [fertility_cnt[tuple(prev[-j:])] for j in range(1, ngram + 1)],
                                     # 'knn_dists': hypo['knn_dists'][k].tolist(),
                             }
                         if args.analyze_knn:

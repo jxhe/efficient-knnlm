@@ -11,10 +11,11 @@
 
 dstore_size=103225485
 pca=512
+code_size=64
 keys=dstore/dstore_size${dstore_size}_embed1024_fp16_keys.npy
 vals=dstore/dstore_size${dstore_size}_embed1024_fp16_vals.npy
 # index_name=dstore/knn.103225485.pca${pca}.index
-index_name=dstore/knn.pca${pca}.index
+index_name=dstore/knn.${dstore_size}.pca${pca}.m${code_size}.index
 
 python build_dstore.py \
     --dstore_keys ${keys} \
@@ -26,3 +27,4 @@ python build_dstore.py \
     --starting_point 0 \
     --dstore_fp16 \
     --pca ${pca} \
+    --code_size ${code_size}

@@ -92,13 +92,13 @@ class SequenceScorer(object):
             lm_max = None
 
             lm_entropy_flag = lm_max_flag = False
-            if self.args and self.args.write_distribution is not None:
+            if self.args and self.args.save_feature is not None:
                 lm_entropy_flag = lm_max_flag = True
-            elif self.args.moe_path != 'none':
-                if 'lm_ent' in self.args.moe_feat:
+            elif self.args.ar_ckpt != 'none':
+                if 'lm_ent' in self.args.ar_feat_type:
                     lm_entropy_flag = True
 
-                if 'lm_max' in self.args.moe_feat:
+                if 'lm_max' in self.args.ar_feat_type:
                     lm_max_flag = True
 
             for i, (bd, tgt, is_single) in enumerate(batched):
@@ -160,7 +160,7 @@ class SequenceScorer(object):
 
             # print(f'forward consumes {time.time() - cur_time} seconds')
 
-            if self.args and self.args.write_distribution is not None:
+            if self.args and self.args.save_feature is not None:
                 lm_context = bd[1][self.args.knn_keytype].permute(1, 0, 2)
 
             else:
@@ -171,7 +171,7 @@ class SequenceScorer(object):
                 dstore = kwargs['knn_dstore']
                 # TxBxC
                 queries = bd[1][self.args.knn_keytype]
-                # if self.args.write_distribution is not None:
+                # if self.args.save_feature is not None:
                 #     lm_context = queries.permute(1, 0, 2)
                 # else:
                 #     lm_context = None
@@ -236,7 +236,7 @@ class SequenceScorer(object):
                 if sample['target'] is not None else None
             tgt_len = ref.numel()
             avg_probs_i = avg_probs[i][start_idxs[i]:start_idxs[i] + tgt_len]
-            if self.args and self.args.write_distribution is not None:
+            if self.args and self.args.save_feature is not None:
                 lm_probs_i = lm_probs[i][start_idxs[i]:start_idxs[i] + tgt_len].cpu()
                 lm_entropy_i = lm_entropy[i][start_idxs[i]:start_idxs[i] + tgt_len].cpu()
                 lm_max_i = lm_max[i][start_idxs[i]:start_idxs[i] + tgt_len].cpu()

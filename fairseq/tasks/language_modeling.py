@@ -126,13 +126,13 @@ class LanguageModelingTask(FairseqTask):
                             help='cache file which stores the related features')
         parser.add_argument('--dstore-weight', default='False', type=str, metavar='BOOL',
                             help='whether applies different weights to different entries')
-        parser.add_argument('--ar-path', default="none", type=str,
+        parser.add_argument('--ar-ckpt', default="none", type=str,
                             help='the path to adaptive retrieval checkpoint')
         parser.add_argument('--ar-cutoff', default=50, type=int,
                             help='the cutoff point in adaptive retrieval')
-        parser.add_argument('--ar-feat', default="ctxt,lm_ent,lm_max", type=str,
+        parser.add_argument('--ar-feat-type', default="ctxt,lm_ent,lm_max", type=str,
                             help='features in adaptive retrievall')
-        parser.add_argument('--cache-feature', default="", type=str,
+        parser.add_argument('--ar-freq-dict', default="", type=str,
                     help='the cache feature directory to read frequency and fertility')
         ## knnlm related items
         # fmt: on

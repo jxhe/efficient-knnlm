@@ -89,9 +89,9 @@ python eval_lm.py data-bin/${dataset} \
     --probe ${probe} --knnlm --fp16 --dstore-fp16 --no-load-keys --knn-sim-func "do_not_recomp_l2" \
     --knn-temp ${temp} \
     --dstore-weight ${dstore_weight} \
-    --ar-path ${moe_path} \
-    --cache-feature ${cache_feature} \
+    --ar-ckpt ${moe_path} \
+    --ar-freq-dict ${cache_feature} \
     --ar-cutoff ${cutoff} \
-    --ar-feat ${moe_feat} \
+    --ar-feat-type ${moe_feat} \
     ${extra}
     # --dstore-weight \
