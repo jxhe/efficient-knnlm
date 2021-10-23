@@ -14,6 +14,31 @@ This repo implements several techniques to speed up the evaluation of non-parame
 
 <img align="center" src="images/model.png" />
 
+## Updates
+
+**October 23, 2021** 
+
+The original [knnlm](https://github.com/urvashik/knnlm) repo and our original code use [faiss](https://github.com/facebookresearch/faiss) CPU to perform retrieval, and most of the faiss [benchmarks](https://github.com/facebookresearch/faiss/wiki/Indexing-1G-vectors) are performed on a CPU environment. However, recently I was playing with faiss-gpu and found that the gpu faiss could reduce the evaluation latency significantly, at least in the WikiText-103 and Law-MT datasets. I would like to report the faiss-gpu results here for readers of interest to have a better understanding of the knnlm efficiency. The faiss-gpu here uses a 40GB A100 GPU (the LM is on the same GPU, i.e. we only need one GPU) and the faiss-cpu uses 32 CPU cores. We note that both WikiText-103 and Law-MT are not in a super large scale, and the behaviour of faiss-gpu and faiss-cpu may change when dealing with larger index, and the throughout would be improved when providing the index with more gpus or cpus. See [here](https://github.com/facebookresearch/faiss/wiki/Comparing-GPU-vs-CPU) for GPU vs CPU.
+
+*WikiText-103:*
+
+| Method      | ppl | tokens/s     |
+| :---        |    ----:   |          ---: |
+| NLM      | 18.66       | 5559   |
+| kNN-LM (faiss-cpu)   | 16.65        | 281      |
+| kNN-LM (faiss-gpu)   | 16.65        | 3204    |
+| efficient kNN-LM (faiss-cpu)   | 16.67        | 2015    |
+| efficient kNN-LM (faiss-gpu)   | 16.67        | 4528    |
+
+*Law-MT:*
+
+| Method      | ppl | tokens/s     |
+| :---        |    ----:   |          ---: |
+| NLM      | 106.56       | 38.2K   |
+| kNN-LM (faiss-cpu)   | 12.64        | 1230      |
+| kNN-LM (faiss-gpu)   | 12.32        | 5781    |
+| efficient kNN-LM (faiss-cpu)   | 12.29        | 6037  |
+| efficient kNN-LM (faiss-gpu)   | 12.03        | 9214  |
 
 
 ## Install Dependencies
@@ -25,7 +50,12 @@ git clone git@github.com:jxhe/efficient-knnlm.git
 
 cd efficient-knnlm
 pip install --editable .
-pip install faiss
+
+# install faiss gpu + cpu
+conda install -c pytorch faiss-gpu
+
+# install fass cpu only
+# conda install -c pytorch faiss-cpu
 ```
 
 #### Hardware
@@ -97,6 +127,7 @@ bash ef_knnlm/utils_cmd/eval_knnlm.sh \
     -p dstore/dstore_size103225485_embed1024_fp16 \
     -i dstore/knn.103225485.pca512.m64.index \
     -n 103225485 \
+    # -g "True" \     # enable this to use GPU faiss
 ```
 
 You should already observe a speedup. 
@@ -153,7 +184,8 @@ bash ef_knnlm/utils_cmd/eval_knnlm.sh \
     -a ctxt,freq,lm_ent,lm_max,fert \
     -u ${cutoff} \
     -h ${ar_ckpt} \
-    # -w "True"
+    # -w "True"  # read datastore weights file, required for greedy-merged datastore
+    # -g "True" # enable this to use GPU faiss
 ```
 
 ### Datastore Pruning
