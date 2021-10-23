@@ -89,6 +89,7 @@ class LanguageModelingTask(FairseqTask):
                             help='max number of tokens in the target sequence')
         parser.add_argument('--truncate-sequence', action='store_true', default=False,
                             help='truncate sequences to --tokens-per-sample')
+
         ## knnlm related items
         parser.add_argument('--knn-keytype', type=str, default=None,
                             help='for knnlm WT103 results, use last_ffn_input')
@@ -112,6 +113,8 @@ class LanguageModelingTask(FairseqTask):
                             help='the distance metric for faiss')
         parser.add_argument('--no-load-keys', default=False, action='store_true',
                             help='do not load keys')
+        parser.add_argument('--gpu-index', default='False', type=str, metavar='BOOL',
+                            help='gpu faiss index')
         parser.add_argument('--dstore-fp16', default=False, action='store_true',
                             help='if true, datastore items are saved in fp16 and int16')
         parser.add_argument('--move-dstore-to-mem', default=False, action='store_true',

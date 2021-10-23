@@ -38,6 +38,7 @@ class KNN_Dstore(object):
         moe_args = ckpt_moe['args']
         moe_epoch = ckpt_moe['epoch']
         self.moe_threshold = ckpt_moe['threshold'][ar_cutoff]
+        # self.moe_threshold=-100
         moe_model = MLPMOE(
             feature_size=moe_args.feature_size,
             hidden_units=moe_args.hidden_units,
@@ -68,6 +69,14 @@ class KNN_Dstore(object):
         index = faiss.read_index(args.indexfile, faiss.IO_FLAG_ONDISK_SAME_DIR)
         print('Reading datastore took {} s'.format(time.time() - start))
         index.nprobe = args.probe
+
+        if options.eval_bool(args.gpu_index):
+            print('gpu faiss index')
+            co = faiss.GpuClonerOptions()
+            co.useFloat16 = True
+            res = faiss.StandardGpuResources()
+            index = faiss.index_cpu_to_gpu(res, 0, index, co)
+            index.nprobe = args.probe
 
         if args.dstore_fp16:
             print('Keys are fp16 and vals are int')
@@ -118,6 +127,13 @@ class KNN_Dstore(object):
 
     def get_knns(self, queries):
         dists, knns = self.index.search(queries.detach().cpu().float().numpy(), self.k)
+
+        # test the overhead from data communication
+        # queries = queries.detach().cpu().float().numpy()
+        # bsz, feat = queries.shape
+        # dists = np.random.rand(bsz, self.k)
+        # knns = np.random.randint(103225480, size=(bsz, self.k))
+        # knns = np.random.randint(19048862, size=(bsz, self.k))
 
         # TODO: this may be an ok way to avoid retrieving itself, but not guranteed due
         # to the aproximation, needs to be carefully checked
