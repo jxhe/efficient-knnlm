@@ -208,7 +208,7 @@ The retrieval results are saved into `dstore/greedy_merge`, other datastore prun
 ```bash
 # perform greedy merging to yield a new smaller datastore, 
 # and build faiss index from the new datastore
-bash ef_knnlm/dstore_compression/merge_compression.sh
+bash ef_knnlm/dstore_compression/greedy_merge.sh
 ```
 
 The pruned datastore and index are saved into `dstore/greedy_merging`, replace the previous`dstore_prefix`/`index_file` with the new ones to use the pruned the datastore. The option `-w "True"`needs to be passed to `eval_knnlm.sh` to read the generated datastore weights file from greedy merging.
