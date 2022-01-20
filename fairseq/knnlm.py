@@ -38,7 +38,7 @@ class KNN_Dstore(object):
         moe_args = ckpt_moe['args']
         moe_epoch = ckpt_moe['epoch']
         self.moe_threshold = ckpt_moe['threshold'][ar_cutoff]
-        # self.moe_threshold=-100
+        # self.moe_threshold=999
         moe_model = MLPMOE(
             feature_size=moe_args.feature_size,
             hidden_units=moe_args.hidden_units,
@@ -76,6 +76,7 @@ class KNN_Dstore(object):
             co.useFloat16 = True
             res = faiss.StandardGpuResources()
             index = faiss.index_cpu_to_gpu(res, 0, index, co)
+
             index.nprobe = args.probe
 
         if args.dstore_fp16:

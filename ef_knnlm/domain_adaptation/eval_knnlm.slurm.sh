@@ -23,14 +23,16 @@ taskid=${SLURM_ARRAY_TASK_ID}
 #     "dstore/knn.103225485.pca256.index")
 
 dstore_size=19068709
-dstore_file="dstore/law/dstore_size19068709_embed1536_fp16"
-index_file=dstore/law/knn.19048862.index
+# dstore_file="dstore/law/dstore_size19068709_embed1536_fp16"
+# index_file=dstore/law/knn.19048862.index
+dstore_file="/projects/tir4/users/urialon/efficient-knnlm/checkpoints/law/dstore16_finetuned_size19068709_embed1536_fp16"
+index_file="/projects/tir4/users/urialon/efficient-knnlm/checkpoints/law/knn_finetuned"
 dataset=law
-ckpt="wmtnc_lm_ckpt/wmt19.en/model.pt"
-# ckpt="/projects/tir4/users/junxianh/projects/knnlmXS/checkpoint/law/20210509/checkpoint_best.pt"
+# ckpt="wmtnc_lm_ckpt/wmt19.en/model.pt"
+ckpt="/projects/tir4/users/junxianh/projects/knnlmXS/checkpoint/law/20210509/checkpoint_best.pt"
 split="test"
-lambda=0.9
-probe=2
+lambda=0.25
+probe=32
 # temp=${temp_list[$taskid]}
 
 temp=1
@@ -38,5 +40,5 @@ temp=1
 
 # echo "evaluate knnlm with temperature ${temp}, index ${index_file}"
 
-bash knnlm_scripts/utils_cmd/eval_knnlm.sh -n ${dstore_size} -p ${dstore_file} -i ${index_file} -d ${dataset} -c ${ckpt} -e ${temp} -s ${split} -l ${lambda} -b ${probe}
+bash ef_knnlm/utils_cmd/eval_knnlm.sh -n ${dstore_size} -p ${dstore_file} -i ${index_file} -d ${dataset} -c ${ckpt} -e ${temp} -s ${split} -l ${lambda} -b ${probe} -g "True"
 

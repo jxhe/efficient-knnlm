@@ -75,7 +75,7 @@ then
     max_tokens=2048
     ctxt=0
     mode="eos"
-    lmbda=0.9
+    # lmbda=0.9
     extra="--remove-bpe"
 else
     extra=""

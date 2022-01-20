@@ -93,27 +93,29 @@ def main(parsed_args):
     args.tokens_per_sample -= args.context_window
     task = tasks.setup_task(args)
 
-    # Load dataset splits
-    task.load_dataset(args.gen_subset)
-    dataset = task.dataset(args.gen_subset)
     args.ar_feat_type = args.ar_feat_type.split(',')
-    if args.context_window > 0:
-        if args.ar_ckpt != 'none' and args.ar_freq_dict != '':
-            if 'freq' in args.ar_feat_type:
-                print('loading freq cache')
-                freq_id_cache = pickle.load(open(os.path.join(args.ar_freq_dict, 'freq_cache_id.pickle'), 'rb'))
-            else:
-                freq_id_cache = None
 
-            if 'fert' in args.ar_feat_type:
-                print('loading fert cache')
-                fertility_id_cache = pickle.load(open(os.path.join(args.ar_freq_dict, 'fertility_cache_id.pickle'), 'rb'))
-            else:
-                fertility_id_cache = None
-            # fertility_id_cache=None
-            # fertility_id_cache = freq_id_cache
+    if args.ar_ckpt != 'none' and args.ar_freq_dict != '':
+        if 'freq' in args.ar_feat_type:
+            print('loading freq cache')
+            freq_id_cache = pickle.load(open(os.path.join(args.ar_freq_dict, 'freq_cache_id.pickle'), 'rb'))
         else:
-            freq_id_cache = fertility_id_cache = None
+            freq_id_cache = None
+
+        if 'fert' in args.ar_feat_type:
+            print('loading fert cache')
+            fertility_id_cache = pickle.load(open(os.path.join(args.ar_freq_dict, 'fertility_cache_id.pickle'), 'rb'))
+        else:
+            fertility_id_cache = None
+        # fertility_id_cache=None
+        # fertility_id_cache = freq_id_cache
+    else:
+        freq_id_cache = fertility_id_cache = None
+
+    if args.context_window > 0:
+        # Load dataset splits
+        task.load_dataset(args.gen_subset)
+        dataset = task.dataset(args.gen_subset)
 
         dataset = LMContextWindowDataset(
             dataset=dataset,
@@ -124,6 +126,16 @@ def main(parsed_args):
             fert=fertility_id_cache,
             knnlm_feat_csize=args.knnlm_feat_csize,
         )
+
+    else:
+        task.load_dataset(args.gen_subset,
+                          freq=freq_id_cache,
+                          fert=fertility_id_cache,
+                          knnlm_feat_csize=args.knnlm_feat_csize,
+                          )
+
+        dataset = task.dataset(args.gen_subset)
+
     logger.info('{} {} {} examples'.format(args.data, args.gen_subset, len(dataset)))
 
     # Optimize ensemble for generation and set the source and dest dicts on the model (required by scorer)
@@ -284,6 +296,12 @@ def main(parsed_args):
                     #     }
 
                     # import pdb; pdb.set_trace()
+                    # reset prev every sentence
+                    # this is only used when the dataset uses eos as the
+                    # boundary, e.g. the law-MT dataset in the paper
+                    # this is commented out for wikitext-103
+                    # prev = [task.target_dictionary.index('</s>')] * ngram
+
                     for k in range(len(hypo['tokens'])):
                         # tok = task.target_dictionary[hypo['tokens'][k].item()]
                         tok = hypo['tokens'][k].item()

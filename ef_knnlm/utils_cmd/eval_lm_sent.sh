@@ -22,6 +22,6 @@ python eval_lm.py data-bin/${dataset} \
     --context-window ${ctxt} \
     --gen-subset ${split} \
     --softmax-batch 1024 \
-    # --remove-bpe \
+    --remove-bpe \
     # --output-word-probs  \
 

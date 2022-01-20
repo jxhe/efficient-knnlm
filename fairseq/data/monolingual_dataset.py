@@ -61,7 +61,7 @@ class MonolingualDataset(FairseqDataset):
     """
 
     def __init__(self, dataset, sizes, src_vocab, tgt_vocab, add_eos_for_other_targets, shuffle,
-                 targets=None, add_bos_token=False):
+                 targets=None, add_bos_token=False, freq=None, fert=None, knnlm_feat_csize=1):
         self.dataset = dataset
         self.sizes = np.array(sizes)
         self.vocab = src_vocab
@@ -74,7 +74,16 @@ class MonolingualDataset(FairseqDataset):
             "targets must be none or one of 'self', 'future', 'past'"
         if targets is not None and len(targets) == 0:
             targets = None
+
         self.targets = targets
+
+
+        # added for knnlm
+        self.freq = freq
+        self.fert = fert
+        if freq is not None or fert is not None:
+            self.ngram = knnlm_feat_csize
+            self.prev = [self.vocab.index('</s>')] * self.ngram
 
     def __getitem__(self, index):
         # import pdb; pdb.set_trace()
@@ -172,7 +181,63 @@ class MonolingualDataset(FairseqDataset):
                   target sentence of shape `(bsz, tgt_len)`. Padding will appear
                   on the right.
         """
-        return collate(samples, self.vocab.pad(), self.vocab.eos())
+        # return collate(samples, self.vocab.pad(), self.vocab.eos())
+        sample = collate(samples, self.vocab.pad(), self.vocab.eos())
+
+        if self.freq is None and self.fert is None:
+            return sample
+
+        pad = self.vocab.pad()
+        freq_feat = []
+        fert_feat = []
+
+        bsz, tsz = sample['net_input']['src_tokens'].shape
+
+        all_freq = []
+        all_fert = []
+
+        # import pdb; pdb.set_trace()
+        for i in range(bsz):
+            freq_feat = []
+            fert_feat = []
+
+            # self.prev = self.prev[-self.ngram:]
+            self.prev = [self.vocab.index('</s>')] * self.ngram
+
+            for t in sample['net_input']['src_tokens'][i]:
+                if t.item() != pad:
+                    if self.freq is not None:
+                        freq_feat.append([self.freq[tuple(self.prev[-j:])] for j in range(1, self.ngram+1)])
+
+                    if self.fert is not None:
+                        fert_feat.append([self.fert[tuple(self.prev[-j:])] for j in range(1, self.ngram+1)])
+                    # freq_feat.append([self.freq[' '.join(self.prev[-j:])] for j in range(1, self.ngram+1)])
+                    # fert_feat.append([self.fert[' '.join(self.prev[-j:])] for j in range(1, self.ngram+1)])
+                    self.prev.append(t.item())
+                else:
+                    if self.freq is not None:
+                        freq_feat.append([0] * self.ngram)
+
+                    if self.fert is not None:
+                        fert_feat.append([0] * self.ngram)
+
+            all_freq.append(freq_feat)
+            all_fert.append(fert_feat)
+        # if self.freq is not None:
+        #     new_freq[i, len(self.prev_tokens):len(self.prev_tokens) + len(tgt[i])] = np.array(freq_feat)
+
+        # if self.fert is not None:
+        #     new_fert[i, len(self.prev_tokens):len(self.prev_tokens) + len(tgt[i])] = np.array(fert_feat)
+
+        # import pdb; pdb.set_trace()
+
+        if self.freq is not None:
+            sample['freq'] = torch.tensor(all_freq, dtype=torch.float)
+
+        if self.fert is not None:
+            sample['fert'] = torch.tensor(all_fert, dtype=torch.float)
+
+        return sample
 
     def num_tokens(self, index):
         """Return the number of tokens in a sample. This value is used to

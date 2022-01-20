@@ -246,6 +246,7 @@ class LanguageModelingTask(FairseqTask):
             shuffle=False if hasattr(self.args, 'lm_eval') and self.args.lm_eval else True,
             targets=self.targets,
             add_bos_token=self.args.add_bos_token,
+            **kwargs,
         )
 
     def build_dataset_for_inference(self, src_tokens, src_lengths, **kwargs):
